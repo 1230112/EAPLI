@@ -1,0 +1,21 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+actor Administrator
+
+Administrator -> AddUserUI: onLoad
+Administrator -> AddUserUI: enter data
+AddUserUI -> AddUserController: getRoleTypes()
+AddUserController -> BaseRoles: nonUserValues()
+AddUserUI -> AddUserUI : showRoles
+Administrator -> AddUserUI: enter role
+Administrator -> AddUserUI: submit
+AddUserController -> UserManagementService: registerNewUser(...)
+UserManagementService -> SystemUserFactory: newSystemUser(...)
+entity SystemUser
+SystemUserFactory -> SystemUser: create
+UserManagementService -> UserRepository: save
+AddUserUI -> AddUserUI: show
+
+@enduml

@@ -1,0 +1,62 @@
+@startuml US2000C_SD
+autonumber
+
+actor "Operator" as T
+
+participant "ListCandidatesUI" as UI <<presentation>>
+participant "ListCandidatesController" as CTRL <<application>>
+participant "AuthenticationService" as AUTH <<service>>
+participant "CandidateService" as SER <<service>>
+
+participant "Candidate" as CAN <<domain>>
+
+participant "ListCandidates" as C_DTO <<dto>>
+
+
+database CandidateRepository as REP <<repository>>
+
+
+T -> UI: requests to list all candidates
+activate UI
+
+UI -> CTRL: getAll()
+activate CTRL
+
+
+
+activate AUTH
+CTRL -> AUTH : authenticatedUser = loggedinUserWithPermissions()
+
+deactivate AUTH
+CTRL -> SER : findAll()
+deactivate CTRL
+
+activate SER
+SER -> REP : findAll()
+deactivate SER
+activate REP
+REP -> REP :finding candidates
+deactivate REP
+REP --> SER : candidates
+activate SER
+loop for each candidate
+      SER -> CAN : listcandidatesDTO = ListCandidates(this.email, this.name.firstName(), this.name.lastName());
+
+      activate CAN
+
+      CAN -> C_DTO** : new
+      end loop
+      deactivate CAN
+      SER --> CTRL : listcandidatesDTO
+deactivate SER
+activate CTRL
+CTRL -> UI: listcandidatesDTO
+
+deactivate CTRL
+
+
+deactivate CTRL
+UI --> T: showInfo(listcandidatesDTO)
+deactivate UI
+
+@enduml

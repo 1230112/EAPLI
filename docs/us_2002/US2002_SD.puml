@@ -1,0 +1,100 @@
+@startuml US2002_SD
+autonumber
+title: US 2002 - Register a JobApplication
+
+actor "Operator" as O
+participant ":AddJobApplicationUI" as UI <<presentation>>
+participant ":AddJobApplicationController" as CTRL <<application>>
+participant ":AddUserController" as UCTRL <<application>>
+participant ":JobService" as js <<service>>
+participant ":UserManagementService" as UM <<service>>
+participant "JobApplicationBuilder" as B <<domain>>
+participant "JobApplication" as J <<domain>>
+participant ":JobApplicationRepository" as REPU <<repository>>
+participant ":JobOpeningRepository" as REPJ <<repository>>
+participant ":CandidateRepository" as REPC <<repository>>
+
+activate O
+
+O -> UI : asks to import a new job application
+activate UI
+UI --> O : requests data (candidateDataFile, CVFile)
+deactivate UI
+
+O -> UI : types request data
+activate UI
+UI -> UI : readCandidateData(candidateDataFile)
+
+UI -> CTRL : addJobApplication(candidateData, CvFile)
+activate CTRL
+CTRL -> js : findJobOpeningByReference(jobReference)
+activate js
+js -> REPJ : findJobOpeningByReference(jobReference)
+activate REPJ
+
+alt "Job Opening is not created"
+REPJ --> js : returns empty
+deactivate REPJ
+js --> CTRL : returns empty
+deactivate js
+CTRL --> UI : informs job opening is not created
+deactivate CTRL
+UI --> O : informs job opening is not created and finishes process
+else "Job Opening is created"
+activate REPJ
+REPJ --> js : returns jobOpening
+deactivate REPJ
+activate js
+js --> CTRL : returns jobOpening
+activate CTRL
+deactivate js
+end alt
+
+CTRL -> UM : findCandidateById(email)
+activate UM
+UM -> REPC : findCandidateByEmail(email)
+activate REPC
+
+alt "Candidate is not created"
+REPC --> UM : returns empty
+deactivate REPC
+UM --> CTRL : returns empty
+deactivate UM
+CTRL --> UI : "Informs creation of new candidate"
+UI --> O : "Informs creation of new candidate"
+CTRL -> UCTRL : addCandidate(email, firstName, lastName, phoneNumber)
+activate UCTRL
+UCTRL --> CTRL : returns candidate
+deactivate UCTRL
+CTRL --> UI : "Candidate has been created"
+UI --> O : "Candidate has been created"
+else "Candidate is created"
+activate REPC
+REPC --> UM : returns candidate
+deactivate REPC
+activate UM
+UM --> CTRL : returns candidate
+deactivate UM
+end alt
+
+CTRL -> B : JobApplicationBuilder().withJobApplicationId(jobApplicationId).withJobOpening(jobOpening).withCandidate(candidate).withCv(cv).withScreeningResult(ScreeningResult.WAITING).build();
+activate B
+B -> J : JobApplication(jobApplicationId, jobOpening, candidate, cv)
+activate J
+J --> B : returns jobApplication
+deactivate J
+B --> CTRL : returns jobApplication
+deactivate B
+CTRL -> REPU : save(jobApplication)
+activate REPU
+REPU --> CTRL : returns jobApplication
+deactivate REPU
+CTRL --> UI : informs operation success
+deactivate CTRL
+UI--> O : informs operation success
+deactivate UI
+
+
+deactivate O
+
+@enduml

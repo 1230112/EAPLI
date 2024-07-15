@@ -1,0 +1,36 @@
+@startuml US1006_SSD
+
+autonumber
+
+actor CustomerManager as "CustomerManager"
+
+activate CustomerManager
+
+CustomerManager -> ":System" : asks the system to display data of a Candidate
+activate ":System"
+":System" --> ":System"
+
+":System" --> CustomerManager : requests email
+deactivate ":System"
+
+CustomerManager -> ":System" : types email
+activate ":System"
+
+":System" --> CustomerManager : requests confirmation
+deactivate ":System"
+
+CustomerManager -> ":System" : confirms the data
+activate ":System"
+":System" --> ":System"
+alt !ERROR
+":System" --> CustomerManager : shows email, name, phone, app_status and requirements_file of the Candidate
+
+else ERROR
+":System" --> CustomerManager : informs operation unsuccess and why
+deactivate ":System"
+end alt
+
+
+deactivate CustomerManager
+
+@enduml

@@ -1,0 +1,76 @@
+@startuml US2000A_SD
+autonumber
+
+actor "Operator" as O
+participant "AddUserUI" as UI <<presentation>>
+participant "AddUserController" as CTRL <<application>>
+participant "AuthorizationService" as AUTH <<service>>
+participant "UserManagementService" as UM <<service>>
+participant "PasswordGenerator" as PG <<service>>
+participant "SystemUserBuilder" as SB <<domain>>
+participant "SystemUser" as SU <<domain>>
+participant "CandidateBuilder" as B <<domain>>
+participant "Candidate" as C <<domain>>
+database "UserRepository" as REPU <<repository>>
+database CandidateRepository as REPC <<repository>>
+
+activate O
+
+O -> UI : asks to create a new Candidate
+activate UI
+
+UI --> O : requests data (email, firstName, lastName, requirementsFile"optional", phoneNumber)
+deactivate UI
+
+O -> UI : types request data
+activate UI
+
+
+
+UI -> CTRL : addCandidate(userData.email(), userData.firstName(), userData.lastName(), userData.requirementsFile(), userData.phoneNumber())
+activate CTRL
+activate AUTH
+CTRL -> AUTH : authz.isAuthenticatedUserAuthorizedTo(BaseRoles.OPERATOR)
+deactivate AUTH
+CTRL -> PG : generateWithoutPolicyAndEncoder()
+activate PG
+PG -> PG : generate(PasswordPolicy, PasswordEncoder)
+PG --> CTRL : password
+deactivate PG
+CTRL -> CTRL : addUser(email, password, firstName, lastName, roles, createdOn)
+activate UM
+CTRL -> UM : registerNewUser(email, password, firstName, lastName, email, roles,createdOn)
+activate SB
+UM -> SB : SystemUserBuilder(policy, encoder)
+UM -> SB : with(username, rawPassword, firstName, lastName, email).createdOn(createdOn).withRoles(roles)
+SB -> SU : build()
+deactivate SB
+activate SU
+SU --> UM : SystemUser
+activate REPU
+UM -> REPU : save(SystemUser)
+deactivate REPU
+deactivate
+deactivate UM
+activate B
+CTRL -> B : CandidateBuilder()\n.withEmail(email)\n.withFirstName(firstName)\n.withLastName(lastName)\n.withRequirementsFile(requirementsFile)\n.withPhoneNumber(phoneNumber)\n.withAppStatus("ENABLE")\n.build()
+B -> C : build()
+deactivate B
+activate C
+C --> CTRL : Candidate
+deactivate C
+activate REPC
+CTRL -> REPC : save(Candidate)
+deactivate REPC
+CTRL --> UI : informs operation success
+deactivate CTRL
+UI--> O : informs operation success
+deactivate UI
+
+
+
+
+
+deactivate O
+
+@enduml

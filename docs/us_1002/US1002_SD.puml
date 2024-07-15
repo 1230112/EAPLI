@@ -1,0 +1,67 @@
+@startuml US1002_SD
+autonumber
+title: US 1002 - Register a Job Opening
+
+actor "Operator" as O
+participant ":AddJobOpeningUI" as UI <<presentation>>
+participant ":AddJobOpeningController" as CTRL <<application>>
+participant ":AddUserController" as UCTRL <<application>>
+participant ":JobService" as js <<service>>
+participant ":UserManagementService" as UM <<service>>
+participant "JobOpeningBuilder" as B <<domain>>
+participant "JobOpening" as J <<domain>>
+participant ":JobOpeningRepository" as REPU <<repository>>
+participant ":AuthorizationService" as AUTH <<service>>
+
+activate O
+
+O -> UI : asks to add a new job opening
+activate UI
+UI --> O : requests data (title, address, description, numberOfVacancies, company)
+deactivate UI
+
+O -> UI : types request data
+activate UI
+UI -> O : presents Contract Type to choose from or create a new one
+deactivate UI
+O -> UI : selects/types contract type
+activate UI
+UI -> O : presents Modes to choose from or create a new one
+deactivate UI
+O -> UI : selects/types mode
+activate UI
+
+
+UI -> CTRL : addJobOpening(title, address, jobDescription, contractType, numberVacancies, mode, company)
+activate CTRL
+CTRL -> AUTH : ensureAuthenticatedUserHasAnyOf(BaseRoles.POWER_USER, BaseRoles.ADMIN, BaseRoles.CUSTOMER_MANAGER)
+activate AUTH
+AUTH --> CTRL : success
+deactivate AUTH
+CTRL -> CTRL : generates JobReference
+CTRL -> AUTH : getAuthenticatedUser()
+activate AUTH
+AUTH --> CTRL : returns User
+deactivate AUTH
+CTRL -> B : JobOpeningBuilder().withJobReference(jobReference).withTitle(title).withAddress(address).withJobDescription(jobDescription).withContractType(contractType).withNumberVacancies(numberVacancies).withMode(mode).withCompany(company).withCostumerManager(thisUser).build()
+
+activate B
+B -> J : JobOpening(jobReference, title, address, jobDescription, contractType, numberVacancies, mode, company, costumerManager)
+activate J
+J --> B : returns JobOpening
+deactivate J
+B --> CTRL : returns JobOpening
+deactivate B
+CTRL -> REPU : save(JobOpening)
+activate REPU
+REPU --> CTRL : returns JobOpening
+deactivate REPU
+CTRL --> UI : returns JobOpening
+deactivate CTRL
+UI--> O : informs operation success
+deactivate UI
+
+
+deactivate O
+
+@enduml

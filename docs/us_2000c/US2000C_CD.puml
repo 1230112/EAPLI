@@ -1,0 +1,98 @@
+@startuml US2000C_CD
+
+class ListCandidatesUI {
+
+}
+
+class ListCandidatesController {
+- authorizationService
+- candidateService
++ ListCandidatesController(authorizationService, candidateRepository)
++getAll()
+}
+
+
+
+class Candidate {
+ - email
+ -firstName
+    - lastName
+   - requirementsFile
+   - phoneNumber
+   - appStatus
+   - createdAt
+  + toListDto()
+}
+
+class ListCandidatesDTO {
+  - email
+  - firstName
+  - lastName
+}
+
+
+class AuthorizationService {
+- LOGGER
+- theSession
++isAuthenticatedUserAuthorizedTo()
+}
+
+
+
+class CandidateService {
+- enrolmentRepository
++ findAll()
+}
+
+
+
+
+class RepositoryFactory {
+  + RepositoryFactory()
+}
+
+
+class PersistenceContext {
+  - repositories()
+}
+
+
+interface CandidateRepository {
++ findAll()
+}
+
+class InMemoryCandidateRepository {
++ findAll()
+}
+
+class JpaCandidateRepository {
++ findAll()
+}
+
+
+ListCandidatesController --> AuthorizationService
+PersistenceContext --> RepositoryFactory
+
+RepositoryFactory --> CandidateRepository
+
+
+
+CandidateRepository <|.. InMemoryCandidateRepository
+CandidateRepository <|.. JpaCandidateRepository
+
+
+
+ListCandidatesController --> CandidateService
+
+ListCandidatesController --> Candidate
+ListCandidatesController --> ListCandidatesDTO
+
+ListCandidatesUI --> PersistenceContext
+ListCandidatesUI --> ListCandidatesController
+
+CandidateService --> CandidateRepository
+
+
+
+
+@enduml

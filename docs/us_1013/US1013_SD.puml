@@ -1,0 +1,151 @@
+@startuml US1013_SD
+autonumber
+
+actor "CustomerManager" as T
+
+participant "RankCandidatesUI" as UI <<presentation>>
+participant "RankOrderDTO" as RO_DTO <<dto>>
+participant "RankCandidatesController" as CTRL <<application>>
+participant "RankingDTO" as R_DTO <<dto>>
+participant "RankOrderDTOParser" as PARSER <<service>>
+participant "RankingBuilder" as R_BUILDER <<builder>>
+participant "AuthenticationService" as AUTH <<service>>
+participant "JobAplicationDTOService" as ASER <<service>>
+participant "JobOpeningDTOService" as SER <<service>>
+participant "JobOpeningDTOParser" as PARSERJ <<service>>
+participant "JobOpening" as MAP <<domain>>
+participant "JobApplication" as CMAP <<domain>>
+participant "JobOpeningDTO" as J_DTO <<dto>>
+participant "JobApplicationDTO" as A_DTO <<dto>>
+participant "RankingRepository" as R_REP <<repository>>
+participant JobOpeningRepository as REP <<repository>>
+participant JobAplicationRepository as AREP <<repository>>
+
+
+T -> UI: requests to rank candidates
+activate UI
+UI -> CTRL: getValidJobOpenings()
+activate CTRL
+
+CTRL -> SER : allJobOpeningsAssignedToMeAnalysisPhase()
+activate SER
+
+SER -> AUTH : currentUser = session().get().authenticatedUser()
+activate AUTH
+AUTH --> SER : currentUser
+deactivate AUTH
+deactivate CTRL
+
+
+SER -> REP : findJobOpeningsAssignedToMeAnalysisPhase(currentUser)
+deactivate SER
+activate REP
+REP -> REP :finding jobOpenings assigned to me, analysis phase without a ranking
+activate SER
+REP--> SER : jobOpenings
+deactivate REP
+loop for each jobOpening
+SER -> MAP: toDTO()
+MAP -> J_DTO**: new
+MAP --> SER: jobOpeningDTO
+end loop
+
+      SER --> CTRL : jobOpeningDTOList
+deactivate SER
+activate CTRL
+CTRL --> UI: jobOpeningDTOList
+
+deactivate CTRL
+
+UI --> T: showInfo(jobOpeningDTOList)
+UI --> T: request select a jobOpening
+T -> UI: type jobOpening number
+UI -> CTRL: getValidJobApplications(jobOpeningDTO)
+deactivate UI
+activate CTRL
+activate PARSERJ
+CTRL -> PARSERJ : valueOf(jobOpeningDTO)
+PARSERJ -> REP : ofIdentity(JobReference.valueOf(dto.getJobReference()))
+activate REP
+REP -> REP :
+REP --> PARSERJ : jobOpening
+deactivate REP
+PARSERJ --> CTRL : jobOpening
+deactivate PARSERJ
+activate ASER
+CTRL -> ASER : allJobApplicationsAfterScreewningResultByJobReference(jobOpeningEntity)
+ASER -> AREP : findJobApplicationsAfterScreewningResultAndInterviewGradeIfItHasByJobReference(jobOpening)
+deactivate ASER
+activate AREP
+AREP -> AREP : finding aplications by jobOpening
+AREP --> ASER : aplications
+deactivate AREP
+activate ASER
+loop for each aplication
+ASER -> CMAP : toDTO()
+CMAP -> A_DTO**: new
+CMAP --> ASER: jobApplicationDTO
+end loop
+ASER --> CTRL : Iterable<jobApplicationDTO>
+deactivate ASER
+activate CTRL
+activate UI
+CTRL --> UI: Iterable<jobApplicationDTO>
+deactivate CTRL
+activate T
+UI --> T: show numberVacancies
+UI --> T: show number of getValidJobApplications
+UI --> T: request type number of extraVacantions
+T -> UI: type number of extraVacantions
+loop for each (numberVacantion+extraVacantions)
+UI --> T: show Iterable<jobApplicationDTO>
+UI --> T: request type number of application
+T -> UI: type number
+UI -> RO_DTO**: new
+UI-> UI: rankOrder.add(newRankOrder)
+UI -> UI: delete this application in the list
+end loop
+deactivate T
+UI -> CTRL: rankedCandidates(jobOpeningDTO, Set<RankOrderDTO>)
+CTRL -> R_DTO**: new(String jobReference, Set<RankOrderDTO> rankOrder)
+
+CTRL -> PARSER : valueOf(rankingDTO)
+activate PARSER
+PARSER -> REP : ofIdentity(JobReference.valueOf(dto.getJobReference()))
+activate REP
+REP -> REP :
+REP --> PARSER : jobOpening
+deactivate REP
+loop for each rankOrderDTO
+PARSER -> AREP : applicationId =ofIdentity(JobApplicationId.valueOf(rankOrderDTO.getJobApplicationId()))
+PARSER -> PARSER : number = OrderNumber.valueOf(rankOrderDTO.getNumber())
+PARSER -> PARSER : rankOrderEntity = new RankOrder(jobApplication, number)
+PARSER -> PARSER : rankOrderSet.add(rankOrderEntity)
+PARSER -> R_BUILDER : new(jobOpening, Set<RankOrder>)
+activate R_BUILDER
+R_BUILDER -> R_BUILDER : build()
+R_BUILDER --> PARSER : ranking
+deactivate R_BUILDER
+end loop
+PARSER --> CTRL : ranking
+deactivate PARSER
+CTRL -> R_REP : save(ranking)
+deactivate CTRL
+
+activate R_REP
+R_REP -> R_REP : save(ranking)
+
+deactivate R_REP
+
+R_REP --> CTRL : success/insuccess message
+
+activate CTRL
+CTRL --> UI : success/insuccess message
+deactivate CTRL
+UI --> T : success/insuccess message
+deactivate UI
+
+
+
+
+@enduml

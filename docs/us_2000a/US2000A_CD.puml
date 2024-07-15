@@ -1,0 +1,123 @@
+@startuml US2000A_CD
+
+class AddUserUI {
+
+}
+
+class AddUserController {
+- auth
+- userSvc
+- candidateRepository
++ AddUserController(authorizationService, candidateRepository)
++getCandidate(email)
+}
+
+class AuthorizationService {
+- LOGGER
+- theSession
++isAuthenticatedUserAuthorizedTo()
+}
+
+class Candidate {
+ - email
+ -firstName
+    - lastName
+   - requirementsFile
+   - phoneNumber
+   - createdAt
+
+}
+
+
+class UserManagementService {
+- userRepository
+- encoder
+- policy
++registerNewUser(email, password, firstName, lastName, email, roles,createdOn)
+}
+
+
+
+
+class CandidateBuilder {
++withEmail()
++withName()
++withRequirementsFile()
++withPhoneNumber()
++withAppStatus()
++build()
+
+}
+
+class RepositoryFactory {
+  + RepositoryFactory()
+}
+
+
+class PersistenceContext {
+  - repositories()
+}
+
+
+interface CandidateRepository {
++ save()
+}
+
+class InMemoryCandidateRepository {
++ findByEmail(email)
+}
+
+class JpaCandidateRepository {
++ findByEmail(email)
+}
+ class SystemUserBuilder {
+ +withUsername()
+    + withPassword()
+    + withName()
+    + withEmail()
+    + withcreatedOn()
+    + withRoles()
+    + build()
+ }
+
+ class SystemUser {
+ - username
+    - password
+    -firstName
+    - lastName
+    - email
+    - roles
+    - createdOn
+ }
+ class UserRepository {
++save()
+ }
+
+AddUserController --> AuthorizationService
+AddUserController --> UserManagementService
+UserManagementService --> SystemUserBuilder
+SystemUserBuilder --> SystemUser
+RepositoryFactory ---> UserRepository
+UserManagementService --> UserRepository
+PersistenceContext --> RepositoryFactory
+
+RepositoryFactory --> CandidateRepository
+
+
+
+
+
+
+AddUserController --> CandidateRepository
+
+AddUserController --> CandidateBuilder
+CandidateBuilder --> Candidate
+
+
+AddUserUI --> PersistenceContext
+AddUserUI --> AddUserController
+
+
+
+
+@enduml

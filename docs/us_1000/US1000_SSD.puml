@@ -1,0 +1,34 @@
+@startuml US1000_SSD
+
+autonumber
+
+actor Administrator as "Administrator"
+
+activate Administrator
+
+Administrator -> ":System" : asks the system to create a new User
+activate ":System"
+
+":System" --> Administrator : requests data (Email, Name, Role)
+deactivate ":System"
+
+Administrator -> ":System" : types request data
+activate ":System"
+
+":System" --> Administrator : requests confirmation
+deactivate ":System"
+
+Administrator -> ":System" : confirms the data
+activate ":System"
+alt !ERROR
+":System" --> Administrator : informs operation success
+deactivate ":System"
+else ERROR
+":System" --> Administrator : informs operation error and the reason
+deactivate ":System"
+end alt
+
+
+deactivate Administrator
+
+@enduml

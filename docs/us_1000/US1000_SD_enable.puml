@@ -1,0 +1,21 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+actor Administrator
+
+Administrator -> ActivateUserUI: onLoad
+ActivateUserUI -> ActivateUserController: getDeactivatedUsers()
+ActivateUserController -> UserManagementService: getDeactivatedUsers()
+UserManagementService -> UserRepository : find
+ActivateUserUI -> ActivateUserUI: show
+Administrator -> ActivateUserUI: enter data
+Administrator -> ActivateUserUI: submit
+ActivateUserUI -> ActivateUserController: activateUser(...)
+ActivateUserController -> UserManagementService: activateUser(...)
+entity SystemUser
+UserManagementService -> SystemUser: enable()
+UserManagementService -> UserRepository: save
+ActivateUserUI -> ActivateUserUI: show
+
+@enduml

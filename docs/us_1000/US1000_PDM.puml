@@ -1,0 +1,35 @@
+@startuml
+title Domain Model for US1000_PDM
+
+package "<<Aggregate>> User" {
+  entity "<<root>> <<entity>> User" {
+    +User(email: Email, name: Name, role: Role)
+
+  }
+class "Email" <<(V,#FFD000)value object>> {
+
+}
+class "Name" <<(V,#FFD000)value object>>{
+
+}
+class "Role"<<(V,#FFD000)value object>> {
+
+}
+class "Password" <<(V,#FFD000)value object>>{
+
+}
+class "App_Status" <<(V,#FFD000)value object>>{
+
+}
+}
+
+
+"<<root>> <<entity>> User" "1"-->"1" "Email" : has
+"<<root>> <<entity>> User" "1"-->"1" "Name" : has
+"<<root>> <<entity>> User" "1"-->"1" "Role" : has
+"<<root>> <<entity>> User" "1"-->"1" "Password" : has
+"<<root>> <<entity>> User" "1"-->"1" "App_Status" : has
+
+
+
+@enduml

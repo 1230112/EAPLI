@@ -1,0 +1,25 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+actor Administrator
+
+Administrator -> ListUsersUI: onLoad
+Administrator -> ListUsersUI: enter data
+Administrator -> ListUsersUI: submit
+group Optional [If option to specific role chosen]
+ListUsersUI -> ListUsersController: getRoles()
+ListUsersController -> BaseRoles: getAvailableRoles()
+ListUsersUI -> ListUsersUI : showRoles
+Administrator -> ListUsersUI: enter data
+Administrator -> ListUsersUI: submit
+end
+ListUsersUI -> ListUsersController: getAllUsers()
+ListUsersController -> UserManagementService: allUsers()
+UserManagementService -> UserRepository: findAll()
+group Optional [If option to specific role chosen]
+ListUsersUI -> ListUsersController: getAllUsersOfRole(...)
+end
+ListUsersUI -> ListUsersUI: show
+
+@enduml

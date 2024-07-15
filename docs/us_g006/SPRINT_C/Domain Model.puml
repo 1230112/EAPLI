@@ -1,0 +1,221 @@
+@startuml
+title Jobs4u Domain Model
+'https://plantuml.com/class-diagram
+'skinparam groupInheritance 3
+'skinparam linetype ortho
+skinparam linetype polyline
+/'abstract class AbstractList
+abstract AbstractCollection
+interface List
+interface Collection
+
+List <|-- AbstractList
+Collection <|-- AbstractCollection
+
+Collection <|- List
+AbstractCollection <|- AbstractList
+AbstractList <|-- ArrayList
+
+class ArrayList {
+Object[] elementData
+size()
+}
+
+enum TimeUnit {
+DAYS
+HOURS
+MINUTES
+}'/
+
+
+package JobOpening <<aggregate>> as agrJO {
+    class JobOpening <<root>><<entity>> #back:firebrick
+    class JobReference <<VO>> <<identity>> #back:lightgreen
+    class ContractType <<VO>>
+    class Mode <<VO>>
+    class JobDescription <<VO>>
+    class NumberOfVacancies <<VO>>
+    class Address <<VO>>
+    class Title <<VO>>
+    class Company <<VO>>
+
+    JobOpening -> JobReference
+    JobOpening -up-> ContractType
+    JobOpening -up-> NumberOfVacancies
+    JobOpening -up-> Mode
+    JobOpening -up-> Company
+    JobOpening -up-> Address
+    JobOpening -up-> Title
+    JobOpening -up-> JobDescription
+    class RecruitmentProcess <<entity>>
+    JobOpening "1" -up-> "1" RecruitmentProccess
+
+    class RecruitmentPhase <<entity>>
+        class RecruitmentPhaseType <<entity>>
+        class StartDate <<VO>>
+        class EndDate <<VO>>
+        class Status <<VO>>
+        class Sequence <<VO>>
+        class RecruitmentPhaseName <<VO>>
+        class RecruitmentPhaseId <<VO>><<identity>> #back:lightgreen
+        class RecruitmentPhaseTypeId <<VO>><<identity>> #back:lightgreen
+
+        RecruitmentPhase -up-> "1" StartDate
+        RecruitmentPhase -up-> "1"EndDate
+        RecruitmentPhase -up-> "1" RecruitmentPhaseId
+        RecruitmentPhaseType -up-> "1" RecruitmentPhaseTypeId
+        RecruitmentPhaseType -up-> "1" RecruitmentPhaseName
+        RecruitmentProccess -up-> "4..5" RecruitmentPhase
+        RecruitmentPhase -up-> "1" RecruitmentPhaseType
+        Status <-up- "1" RecruitmentPhase
+        Sequence <-up- "1" RecruitmentPhase
+}
+
+
+
+
+
+package Ranking <<aggregate>> as Ranking {
+    class Ranking <<root>> <<entity>> #back:firebrick
+    class JobReference <<VO>> <<identity>> #back:lightgreen
+    class ExtraVacancies <<VO>>
+    class OrderRank <<VO>> {
+        class JobAplicationId <<VO>>
+        class OrderNumber <<VO>>
+    }
+
+
+    Ranking --> "1" JobReference
+    Ranking --> "1..*" OrderRank
+    Ranking --> "1" ExtraVacancies
+
+}
+Ranking -down-* "1" JobOpening
+
+
+
+OrderRank -down-> "1" JobApplication
+
+package Customer <<aggregate>> as agrCustomer {
+    class Customer <<root>> <<entity>> #back:firebrick
+    class CustomerCode <<VO>> <<identity>> #back:lightgreen
+
+    class PhoneNumber <<VO>>
+    class CompanyAddress <<VO>>
+    class CompanyName <<VO>>
+    Customer -right> "1" CustomerCode
+    Customer --> "1" CompanyName
+    Customer --> "1" PhoneNumber
+
+    Customer --> "1" CompanyAddress
+
+}
+
+
+package SystemUser <<aggregate>> as agrSU {
+    class SystemUser <<root>> <<entity>> #back:firebrick
+    class Username <<VO>> <<identity>> #back:lightgreen
+    class Name <<VO>>{
+            -firstName
+            -lastName
+        }
+    class Password <<VO>>
+    class EmailAddress <<VO>>
+    class Roles <<VO>>
+    class CreatedAt <<VO>>
+
+    SystemUser --> "1" Username
+    SystemUser --> "1" Name
+    SystemUser --> "1" Password
+    SystemUser --> "1" EmailAddress
+    SystemUser --> "1" Roles
+    SystemUser --> "1" CreatedAt
+    }
+
+package Candidate <<aggregate>> as agrCandidate {
+    class Candidate <<root>> <<entity>> #back:firebrick
+    class EmailAddress <<VO>><<identity>> #back:lightgreen
+    class PhoneNumber <<VO>>
+    class RequirementsFile <<VO>>
+    class AppStatus <<VO>>
+
+    Candidate --> "1" EmailAddress
+    Candidate --> "1"PhoneNumber
+
+    Candidate --> "0..1" RequirementsFile
+    Candidate --> "1" AppStatus
+}
+
+Candidate --* SystemUser : is a
+Customer --* SystemUser : is a
+
+package JobApplication <<aggregate>> as JobApplication{
+    class JobApplicationID <<VO>> <<identity>> #back:lightgreen
+    class JobApplication <<root>> <<entity>> #back:firebrick
+    class CvFile <<VO>>
+    class ScreeningResult <<VO>>
+    class ScreeningJustification <<VO>>
+    class FinalResult <<VO>>
+
+    JobApplication "1"-> "1"JobApplicationID
+    JobApplication "1"---> "1"CvFile
+    JobApplication "1"---> "0..1"ScreeningResult
+    JobApplication "1"---> "0..1"ScreeningJustification
+    JobApplication "1"---> "0..1"FinalResult
+}
+
+package InterviewJobApplication <<aggregate>> as InterviewJobApplication{
+    class InterviewJobAplication  <<entity>> #back:firebrick
+        class InterviewJobAplicationDate <<VO>>
+
+        class TimeSpent <<VO>>
+        class AnswersFile <<VO>>
+        class Grade <<VO>>
+        InterviewJobAplication "1"---> "1" JobApplicationID
+        InterviewJobAplication "1"---> "1" InterviewJobAplicationDate
+
+        InterviewJobAplication "1"--> "0..1" TimeSpent
+        InterviewJobAplication "1"--> "0..1" AnswersFile
+        InterviewJobAplication "1"--> "0..1" Grade
+
+}
+
+package JobRequirementsSpecification <<aggregate>> as agrJRS {
+    class JobRequirementsSpecification <<root>> <<entity>> #back:firebrick
+    class JobRequirementsSpecificationID <<VO>> <<identity>> #back:lightgreen
+    class JobRequirement <<VO>>
+    class JobRequirementsPlugginDescription <<VO>>
+    'class InterviewModel <<entity>>
+
+    JobRequirementsSpecification --> "1" JobRequirementsSpecificationID
+    JobRequirementsSpecification --> "1..*" JobRequirement
+JobRequirementsSpecification --> "1" JobRequirementsPlugginDescription
+    'TODO verify cardinality
+    'JobRequirementsSpecification -> "*" InterviewModel
+}
+
+package InterviewModel <<aggregate>> as agrIM{
+    class InterviewModel <<root>> <<entity>> #back:firebrick
+    class InterviewModelID <<identity>> #back:lightgreen
+    class InterviewQuestion <<entity>>
+    class InterviewPlugginDescription <<VO>>
+    together{
+        enum QuestionType <<VO>>
+        class Answer <<VO>>
+        Answer .> QuestionType
+    }
+    InterviewModel --> "1"InterviewPlugginDescription
+    InterviewModel -> "1" InterviewModelID
+    InterviewModel --> "1..*" InterviewQuestion
+    InterviewQuestion *-- "1" QuestionType
+    InterviewQuestion *-- "1..*" Answer
+}
+
+Customer"1" -up-> "*" JobOpening: creates
+Candidate"1" <-- "*" JobApplication: is submitted by
+JobOpening "*" --> "1" JobRequirementsSpecification : includes
+JobOpening "*"-up----> "0..1" InterviewModel : includes
+'Interview ..> InterviewModel : <<uses>>
+JobApplication "*" -up--> "1" JobOpening : refers to
+
+@enduml

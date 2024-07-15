@@ -1,0 +1,35 @@
+@startuml US1000_SSD
+
+autonumber
+title: US1000 - Register a Candidate
+
+actor CustomerManager as "Customer Manager"
+
+activate CustomerManager
+
+CustomerManager -> ":System" : asks the system to create a new Customer
+activate ":System"
+
+":System" --> CustomerManager : requests data (Email, Name, Phone, CustomerCode)
+deactivate ":System"
+
+CustomerManager -> ":System" : types request data
+activate ":System"
+
+":System" --> CustomerManager : requests confirmation
+deactivate ":System"
+
+CustomerManager -> ":System" : confirms the data
+activate ":System"
+alt !ERROR
+":System" --> CustomerManager : informs operation success
+deactivate ":System"
+else ERROR
+":System" --> CustomerManager : informs operation unsuccess and why
+deactivate ":System"
+end alt
+
+
+deactivate CustomerManager
+
+@enduml

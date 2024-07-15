@@ -1,0 +1,34 @@
+@startuml US2000A_SSD
+
+autonumber
+
+actor Operator as "Operator"
+
+activate Operator
+
+Operator -> ":System" : asks the system to create a new Candidate
+activate ":System"
+":System" --> ":System" :
+":System" --> Operator : requests data (email, firstName, lastName, requirementsFile"optional", phoneNumber)
+deactivate ":System"
+
+Operator -> ":System" : types request data
+activate ":System"
+
+
+alt !ERROR
+":System" --> Operator : informs operation success
+":System" --> ":System" :
+deactivate ":System"
+else ERROR
+
+":System" --> ":System" :
+activate ":System"
+":System" --> Operator : informs operation unsuccess and why
+deactivate ":System"
+end alt
+
+
+deactivate Operator
+
+@enduml

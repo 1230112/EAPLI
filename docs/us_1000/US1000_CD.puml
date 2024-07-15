@@ -1,0 +1,40 @@
+@startuml US-1000-CD
+
+class User {
+
+  +sameAs()
+  +title()
+  +code()
+  +description()
+  +isOpen()
+  +createdAt()
+
+}
+
+class Email {
+  - email : String
+}
+
+class Name {
+  - name : String
+}
+
+class Password {
+  - password : String
+}
+
+class Role {
+  - Role : String
+}
+
+class App_Status {
+  - App_Status : boolean
+}
+
+Name "1" -->  User
+Email "1" --o  User
+Password "1" -->  User
+Role "1" -->  User
+App_Status "1" -->  User
+
+@enduml

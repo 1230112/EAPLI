@@ -1,0 +1,21 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+actor Administrator
+
+Administrator -> DeactivateUserUI: onLoad
+DeactivateUserUI -> DeactivateUserController: getActiveUsers()
+DeactivateUserController -> UserManagementService: getActiveUsers()
+UserManagementService -> UserRepository : find
+DeactivateUserUI -> DeactivateUserUI: show
+Administrator -> DeactivateUserUI: enter data
+Administrator -> DeactivateUserUI: submit
+DeactivateUserUI -> DeactivateUserController: disableUser(...)
+DeactivateUserController -> UserManagementService: disableUser(...)
+entity SystemUser
+UserManagementService -> SystemUser: disable()
+UserManagementService -> UserRepository: save
+DeactivateUserUI -> DeactivateUserUI: show
+
+@enduml

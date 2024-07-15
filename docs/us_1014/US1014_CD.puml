@@ -1,0 +1,256 @@
+@startuml US1014_CD
+
+class ScheaduleInterviewUI {
+- scheaduleInterviewController
++doShown()
+}
+class JobApplication{
+- jobApplicationId
+- jobOpening
+- candidate
+-cv
+- screeningResult
+- screeningJustification
+-finalResult
++ JobApplication(jobApplicationId, jobOpening, candidate, cv, screeningResult, screeningJustification, finalResult)
++ jobApplicationId()
++ jobOpening()
++ candidate()
++ cv()
++ screeningResult()
++ screeningJustification()
++ finalResult()
++ toDTO()
++ equals(final Object o)
++ hashCode()
++addScreeningResultAndJustification(String screeningResult, String screeningJustification)
++identity()
+}
+class JobApplicationDTO{
+- jobApplicationId
+- jobOpening
+- candidate
+-cv
+- screeningResult
+- screeningJustification
+-finalResult
++ JobApplicationDTO()
+}
+
+ScheaduleInterviewController -up-> JobApplicationDTO
+ScheaduleInterviewController -up-> JobApplication
+class ScheaduleInterviewController {
+- authorizationService
+- interviewApplicationRepository;
+- svcJobOpenings;
+- jobOpeningParser;
+- svcJobApplications;
+- interviewApplicationParser;
++ ScheaduleInterviewController(authorizationService, jobApplicationRepository, interviewApplicationRepository, svcJobOpenings, jobOpeningParser, svcJobApplications, interviewApplicationParser)
++listMyJobOpeningsForScheaduleInterview()
++scheaduleInterview()
++listAcceptedApplicationsForInterview(jobOpeningDTO)
+
+}
+ScheaduleInterviewController -up> InterviewApplicationBuilder
+ScheaduleInterviewController --> InterviewApplication
+
+class InterviewApplicationBuilder{
+- jobApplicationId
+- Date
+- TimeScheaduled
+- TimeSpent
+- AnswersFile
+- Grade
+- Interviewer
++buildOrThrough()
++withJobApplicationId(String jobApplicationId)
++withDate(Date date)
++withTimeScheaduled(Date timeScheaduled)
++withTimeSpent(Date timeSpent)
++withAnswersFile(File answersFile)
++withGrade(String grade)
++withInterviewer(String interviewer)
++build()
+}
+class InterviewApplication{
+- jobApplicationId
+- Date
+- TimeScheaduled
+- TimeSpent
+- AnswersFile
+- Grade
+- Interviewer
++ InterviewApplication(jobApplicationId, Date, TimeScheaduled, TimeSpent, AnswersFile, Grade, Interviewer)
+}
+
+
+
+
+class JobOpeningDTO {
+  - jobReference
+   - jobTitle
+  - jobDescription
+  - address
+  - contractType
+  -numberVacancies
+  - mode
+  -company
+  -costumerManager
+  + JobOpeningDTO()
+}
+class JobOpening {
+  - jobReference
+  - jobTitle
+  - jobDescription
+  - address
+  - contractType
+  -numberVacancies
+  - mode
+  -company
+  -costumerManager
+  + JobOpening()
+    + jobReference()
+    + jobTitle()
+    + jobDescription()
+    + address()
+    + contractType()
+    + numberVacancies()
+    + mode()
+    + company()
+    + costumerManager()
+  + toDTO()
+  +equals(final Object o)
+    +hashCode()
+}
+ScheaduleInterviewController --> JobOpening
+
+
+
+
+
+class JobApplicationDTOService {
+- aplicationRepository
++ allJobApplicationsAfterScreewningResultByJobReference(jobOpening)
+}
+
+class JobOpeningDTOParser {
+-authorizationService
+-jobOpeningRepository
++ JobOpeningDTOParser()
++ valueOf(jobOpeningDTO)
+ }
+ ScheaduleInterviewController --> JobOpeningDTOParser
+    JobOpeningDTOParser ..> JobOpeningDTO
+
+class InterviewApplicationDTOParser {
+-authorizationService
+-jobOpeningRepository
+-jobApplicationRepository
++ InterviewApplicationDTOParser()
++ valueOf(interviewApplicationDTO)
+ }
+ ScheaduleInterviewController --> InterviewApplicationDTOParser
+    InterviewApplicationDTOParser .up.> InterviewApplicationDTO
+
+
+class JobOpeningDTOService {
+-authorizationService
+- jobOpeningRepository
++allJobOpeningsAssignedToMeAnalysisPhase()
+}
+
+
+class RepositoryFactory {
+  + RepositoryFactory()
+}
+
+
+class PersistenceContext {
+  - repositories()
+}
+
+
+interface JobApplicationRepository {
++ findJobApplicationsAfterScreeningResultByJobReference(jobOpening)
+}
+interface InterviewApplicationRepository{
++save(InterviewApplication interviewApplication)
+}
+class InMemoryInterviewApplicationRepository{
++save(InterviewApplication interviewApplication)
+}
+class InMemoryJobApplicationRepository {
++ findJobApplicationsAfterScreeningResultByJobReference(jobOpening)
+}
+class JpaInterviewApplicationRepository{
++save(InterviewApplication interviewApplication)
+}
+class JpaJobApplicationRepository {
++ findJobApplicationsAfterScreeningResultByJobReference(jobOpening)
+}
+interface JobOpeningRepository {
++ findJobOpeningsWithInterviewAssignedToMeInScreeningOrInterviewPhase(currentUser)
+}
+
+class InMemoryJobOpeningRepository {
++ findJobOpeningsWithInterviewAssignedToMeInScreeningOrInterviewPhase(currentUser)
+}
+
+class JpaJobOpeningRepository {
++ findJobOpeningsWithInterviewAssignedToMeInScreeningOrInterviewPhase(currentUser)
+}
+
+
+class InterviewApplicationDTO{
+- jobApplicationId
+- Date
+- TimeScheaduled
+- TimeSpent
+- AnswersFile
+- Grade
+- Interviewer
++ InterviewApplicationDTO()
+}
+ScheaduleInterviewController -> InterviewApplicationDTO
+
+
+class AuthorizationService {
+- LOGGER
+- theSession
++isAuthenticatedUserAuthorizedTo()
++ ensureAuthenticatedUserHasAnyOf(BaseRoles.POWER_USER, BaseRoles.ADMIN, BaseRoles.CUSTOMER_MANAGER)
+
+}
+ScheaduleInterviewController --> AuthorizationService
+PersistenceContext --> RepositoryFactory
+ScheaduleInterviewController --> JobApplicationDTOService
+RepositoryFactory --> JobApplicationRepository
+RepositoryFactory --> JobOpeningRepository
+RepositoryFactory --> InterviewApplicationRepository
+
+
+JobApplicationRepository <|.. InMemoryJobApplicationRepository
+JobApplicationRepository <|.. JpaJobApplicationRepository
+InterviewApplicationRepository <|.. InMemoryInterviewApplicationRepository
+InterviewApplicationRepository <|.. JpaInterviewApplicationRepository
+
+
+JobOpeningRepository <|.. InMemoryJobOpeningRepository
+JobOpeningRepository <|.. JpaJobOpeningRepository
+
+
+ScheaduleInterviewController --> JobOpeningDTOService
+
+
+JobOpeningDTOService --> JobOpeningDTO
+
+ScheaduleInterviewUI --> PersistenceContext
+ScheaduleInterviewUI --> ScheaduleInterviewController
+
+
+
+
+
+
+@enduml

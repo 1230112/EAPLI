@@ -1,0 +1,263 @@
+@startuml US1013_CD
+
+class RankCandidatesUI {
+- rankCandidatesController
++doShown()
+}
+class JobApplication{
+- jobApplicationId
+- jobOpening
+- candidate
+-cv
+- screeningResult
+- screeningJustification
+-finalResult
++ JobApplication(jobApplicationId, jobOpening, candidate, cv, screeningResult, screeningJustification, finalResult)
++ jobApplicationId()
++ jobOpening()
++ candidate()
++ cv()
++ screeningResult()
++ screeningJustification()
++ finalResult()
++ toDTO()
++ equals(final Object o)
++ hashCode()
++addScreeningResultAndJustification(String screeningResult, String screeningJustification)
++identity()
+
+
+}
+RankCandidatesController -up-> JobApplication
+class RankCandidatesController {
+- authorizationService
+- rankingRepository;
+- svcJobOpenings;
+- jobOpeningParser;
+- svcJobApplications;
+- rankOrderParser;
++ RankCandidatesController(authorizationService, jobApplicationRepository, rankingRepository, svcJobOpenings, jobOpeningParser, svcJobApplications, rankOrderParser)
++getValidJobOpenings()
++rankedCandidates()
++getValidJobApplications(JobOpeningDTO)
+
+}
+class JobApplicationDTO{
+- jobApplicationId
+- jobOpening
+- candidate
+-cv
+- screeningResult
+- screeningJustification
+-finalResult
++ JobApplicationDTO()
+}
+RankCandidatesController -up-> JobApplicationDTO
+RankCandidatesController -up> RankingBuilder
+RankCandidatesController --> Ranking
+Ranking -> RankOrder
+class RankingBuilder{
+-ranking
+-jobReference
++buildOrThrough()
++withJobReference(String jobReference)
++withRankOrder(Set<RankOrder> rankOrders)
++withRankOrders(RankOrder rankOrder)
++build()
+}
+class Ranking{
+-JobReference
+-List<RankOrder>
+}
+class RankOrder{
+- JobApplicationId
+- Number
+}
+
+
+
+class JobOpeningDTO {
+  - jobReference
+   - jobTitle
+  - jobDescription
+  - address
+  - contractType
+  -numberVacancies
+  - mode
+  -company
+  -costumerManager
+  + JobOpeningDTO()
+}
+class JobOpening {
+  - jobReference
+  - jobTitle
+  - jobDescription
+  - address
+  - contractType
+  -numberVacancies
+  - mode
+  -company
+  -costumerManager
+  + JobOpening()
+    + jobReference()
+    + jobTitle()
+    + jobDescription()
+    + address()
+    + contractType()
+    + numberVacancies()
+    + mode()
+    + company()
+    + costumerManager()
+  + toDTO()
+  +equals(final Object o)
+    +hashCode()
+}
+RankCandidatesController --> JobOpening
+
+
+
+
+
+class JobApplicationDTOService {
+- aplicationRepository
++ allJobApplicationsAfterScreewningResultByJobReference(jobOpening)
+}
+
+class JobOpeningDTOParser {
+-authorizationService
+-jobOpeningRepository
++ JobOpeningDTOParser()
++ valueOf(jobOpeningDTO)
+ }
+ RankCandidatesController --> JobOpeningDTOParser
+    JobOpeningDTOParser ..> JobOpeningDTO
+
+class RankOrderDTOParser {
+-authorizationService
+-jobOpeningRepository
+-jobApplicationRepository
++ RankOrderDTOParser()
++ valueOf(rankingDTO)
+ }
+ RankCandidatesController --> RankOrderDTOParser
+    RankOrderDTOParser .up.> RankingDTO
+
+
+class JobOpeningDTOService {
+-authorizationService
+- jobOpeningRepository
++allJobOpeningsAssignedToMeAnalysisPhase()
+}
+
+
+class RepositoryFactory {
+  + RepositoryFactory()
+}
+
+
+class PersistenceContext {
+  - repositories()
+}
+
+
+interface JobApplicationRepository {
++findJobApplicationsAfterScreewningResultAndInterviewGradeIfItHasByJobReference(JobOpening jobOpening)
+}
+interface RankingRepository{
++save(Ranking ranking)
+}
+class InMemoryRankingRepository{
++save(Ranking ranking)
+}
+class InMemoryJobApplicationRepository {
++findJobApplicationsAfterScreewningResultAndInterviewGradeIfItHasByJobReference(JobOpening jobOpening)
+}
+class JpaRankingRepository{
++save(Ranking ranking)
+}
+class JpaJobApplicationRepository {
++findJobApplicationsAfterScreewningResultAndInterviewGradeIfItHasByJobReference(JobOpening jobOpening)
+interface JobOpeningRepository {
++ findJobOpeningsAssignedToMeAnalysisPhase(SystemUser currentUser)
+}
+
+class InMemoryJobOpeningRepository {
++ findJobOpeningsAssignedToMeAnalysisPhase(SystemUser currentUser)
+}
+
+class JpaJobOpeningRepository {
++ findJobOpeningsAssignedToMeAnalysisPhase(SystemUser currentUser)
+}
+class Ranking{
+-JobReference
+-(Set<RankOrder> rankOrders)
++Ranking(jobReference, rankOrders)
++ jobOpening()
++equals(final Object o)
++hashCode()
++toString()
++ identity()
++addRankOrder(RankOrder rankOrder)
++ toDTO()
+}
+class RankingDTO{
+- jobReference
+- rankOrders
++ RankingDTO()
+}
+class RankOrderDTO{
+- jobApplicationId
+- orderNumber
++ RankOrderDTO()
+}
+RankCandidatesController -> RankingDTO
+RankCandidatesController --> RankOrderDTO
+class RankOrder <<VO>>{
+- JobApplicationId
+- OrderNumber
++RankOrder(jobApplicationId, orderNumber)
++ jobApplicationId()
++ orderNumber()
++toString()
++ toDTO()
+
+}
+class AuthorizationService {
+- LOGGER
+- theSession
++isAuthenticatedUserAuthorizedTo()
++ ensureAuthenticatedUserHasAnyOf(BaseRoles.POWER_USER, BaseRoles.ADMIN, BaseRoles.CUSTOMER_MANAGER)
+
+}
+RankCandidatesController --> AuthorizationService
+PersistenceContext --> RepositoryFactory
+RankCandidatesController --> JobApplicationDTOService
+RepositoryFactory --> JobApplicationRepository
+RepositoryFactory --> JobOpeningRepository
+RepositoryFactory --> RankingRepository
+
+
+JobApplicationRepository <|.. InMemoryJobApplicationRepository
+JobApplicationRepository <|.. JpaJobApplicationRepository
+RankingRepository <|.. InMemoryRankingRepository
+RankingRepository <|.. JpaRankingRepository
+
+
+JobOpeningRepository <|.. InMemoryJobOpeningRepository
+JobOpeningRepository <|.. JpaJobOpeningRepository
+
+
+RankCandidatesController --> JobOpeningDTOService
+
+
+JobOpeningDTOService --> JobOpeningDTO
+
+RankCandidatesUI --> PersistenceContext
+RankCandidatesUI --> RankCandidatesController
+
+
+
+
+
+
+@enduml

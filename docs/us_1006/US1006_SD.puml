@@ -1,0 +1,60 @@
+@startuml US1006_SD
+autonumber
+
+actor "CustomerManager" as T
+
+participant "DisplayInfoCandidateUI" as UI <<presentation>>
+participant "DisplayInfoCandidateController" as CTRL <<application>>
+participant "AuthenticationService" as AUTH <<service>>
+participant "CandidateService" as SER <<service>>
+
+participant "Candidate" as CAN <<domain>>
+
+participant "CandidateDTO" as C_DTO <<dto>>
+participant "PasswordGenerator" as PG <<domain>>
+
+database CandidateRepository as REP <<repository>>
+
+
+T -> UI: requests to display info of a candidate
+activate UI
+UI --> T: requests email of the candidate
+T -> UI: provides email
+UI -> CTRL: getCandidate(email)
+activate CTRL
+
+
+
+activate AUTH
+CTRL -> AUTH : authenticatedUser = loggedinUserWithPermissions()
+
+deactivate AUTH
+CTRL -> SER : findByEmail(email)
+deactivate CTRL
+
+activate SER
+SER -> REP : findByEmail(email)
+deactivate SER
+activate REP
+REP -> REP :finding candidate
+activate SER
+REP--> SER : candidate
+deactivate REP
+
+      SER -> CAN : candidateDTO = CandidateDTO(this.email, this.name.firstName(), this.name.lastName, this.requirementsFile, this.phoneNumber);
+      activate CAN
+      CAN -> C_DTO** : new
+      deactivate CAN
+      SER --> CTRL : candidateDTO
+deactivate SER
+activate CTRL
+CTRL --> UI: candidateDTO
+
+deactivate CTRL
+
+
+deactivate CTRL
+UI --> T: showInfo(candidateDTO)
+deactivate UI
+
+@enduml

@@ -1,0 +1,141 @@
+@startuml US1014_SD
+autonumber
+
+actor "CustomerManager" as T
+
+participant "ScheaduleInterviewUI" as UI <<presentation>>
+
+participant "ScheaduleInterviewController" as CTRL <<application>>
+participant "InterviewApplicationDTO" as R_DTO <<dto>>
+participant "InterviewApplicationDTOParser" as PARSER <<service>>
+participant "InterviewApplicationBuilder" as R_BUILDER <<builder>>
+participant "AuthenticationService" as AUTH <<service>>
+participant "JobAplicationDTOService" as ASER <<service>>
+participant "JobOpeningDTOService" as SER <<service>>
+participant "JobOpeningDTOParser" as PARSERJ <<service>>
+participant "JobOpening" as MAP <<domain>>
+participant "JobApplication" as CMAP <<domain>>
+participant "JobOpeningDTO" as J_DTO <<dto>>
+participant "JobApplicationDTO" as A_DTO <<dto>>
+participant "InterviewApplicationRepository" as R_REP <<repository>>
+participant JobOpeningRepository as REP <<repository>>
+participant JobAplicationRepository as AREP <<repository>>
+
+
+T -> UI: requests to set date and time of an interview
+activate UI
+UI -> CTRL: listMyJobOpeningsForScheaduleInterview()
+activate CTRL
+CTRL -> AUTH : currentUser = session().get().authenticatedUser()
+activate AUTH
+AUTH --> CTRL : currentUser
+deactivate AUTH
+CTRL -> SER : listJobOpeningsWithInterviewAssignedToMeInScreeningOrInterviewPhase(currentUser)
+activate SER
+
+
+deactivate CTRL
+
+
+SER -> REP : findJobOpeningsWithInterviewAssignedToMeInScreeningOrInterviewPhase(currentUser)
+deactivate SER
+activate REP
+REP -> REP :finding jobOpenings assigned to me, with a Interview Phase set, with currentDate in Screening or Interview Phase
+activate SER
+REP--> SER : jobOpenings
+deactivate REP
+loop for each jobOpening
+SER -> MAP: toDTO()
+MAP -> J_DTO**: new
+MAP --> SER: jobOpeningDTO
+end loop
+
+      SER --> CTRL : jobOpeningDTOList
+deactivate SER
+activate CTRL
+CTRL --> UI: jobOpeningDTOList
+
+deactivate CTRL
+
+UI --> T: showInfo(jobOpeningDTOList)
+UI --> T: request select a jobOpening
+T -> UI: type jobOpening number
+UI -> CTRL: listAcceptedApplicationsForInterview(jobOpeningDTO)
+deactivate UI
+activate CTRL
+activate PARSERJ
+CTRL -> PARSERJ : valueOf(jobOpeningDTO)
+PARSERJ -> REP : ofIdentity(JobReference.valueOf(dto.getJobReference()))
+activate REP
+REP -> REP :
+REP --> PARSERJ : jobOpening
+deactivate REP
+PARSERJ --> CTRL : jobOpening
+deactivate PARSERJ
+activate ASER
+CTRL -> ASER : listJobApplicationsAfterScreeningResultByJobReference(jobOpeningEntity)
+ASER -> AREP : findJobApplicationsAfterScreeningResultByJobReference(jobOpening)
+deactivate ASER
+activate AREP
+AREP -> AREP : finding aplications by jobOpening
+AREP --> ASER : aplications
+deactivate AREP
+activate ASER
+loop for each aplication
+ASER -> CMAP : toDTO()
+CMAP -> A_DTO**: new
+CMAP --> ASER: jobApplicationDTO
+end loop
+ASER --> CTRL : Iterable<jobApplicationDTO>
+deactivate ASER
+activate CTRL
+activate UI
+CTRL --> UI: Iterable<jobApplicationDTO>
+deactivate CTRL
+activate T
+UI --> T: show valid jobApplications
+UI --> T: request type number of jobApplication
+T -> UI: type number
+
+deactivate T
+UI -> CTRL: scheaduleInterview(String Date, String Time, jobOpeningDTO)
+CTRL -> R_DTO**: new(Date, Time, jobApplicationDTO.getJobApplicationId())
+
+CTRL -> PARSER : valueOf(InterviewApplicationDTO)
+activate PARSER
+PARSER -> AREP : ofIdentity(JobApplicationId.valueOf(dto.getJobApplicationId()))
+activate AREP
+AREP -> AREP :
+AREP --> PARSER : jobApplication
+deactivate AREP
+
+PARSER -> PARSER : date = Date.valueOf(InterviewApplicationDTO.getDate())
+PARSER -> PARSER : time = Time.valueOf(InterviewApplicationDTO.getTime())
+PARSER -> R_BUILDER : new(jobApplication, date, time)
+activate R_BUILDER
+R_BUILDER -> R_BUILDER : build()
+R_BUILDER --> PARSER : interviewApplication
+deactivate R_BUILDER
+
+PARSER --> CTRL : interviewApplication
+deactivate PARSER
+CTRL -> R_REP : save(interviewApplication)
+deactivate CTRL
+
+activate R_REP
+R_REP -> R_REP : save(interviewApplication)
+
+deactivate R_REP
+
+R_REP --> CTRL : success/insuccess message
+
+activate CTRL
+CTRL --> UI : success/insuccess message
+deactivate CTRL
+UI --> T : success/insuccess message
+deactivate UI
+
+
+
+
+@enduml

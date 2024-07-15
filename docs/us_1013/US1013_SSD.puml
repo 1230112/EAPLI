@@ -1,0 +1,34 @@
+@startuml US1006_SSD
+
+autonumber
+
+actor CM as " CustomerManager"
+
+activate CM
+
+CM -> ":System" : asks the system to rank all Candidates of a JobOpening
+activate ":System"
+":System" --> ":System" : find list of JobOpenings
+":System" --> "CM": shows the list of JobOpenings and request to type the number of one of them
+
+"CM" -> ":System" : type number
+
+":System" --> ":System" : find list of Applications in this JobOpenings
+":System" --> CM : shows the list of Applications of the JobOpening
+
+loop for each (numberVacantion+extraVacantions)
+":System" --> CM : request enter the number X application of the rank
+"CM" -> ":System" : type number
+end loop
+
+activate ":System"
+":System" --> ":System" : save the rank
+
+":System" --> CM : informs operation success/unsuccess
+deactivate ":System"
+
+
+
+deactivate CM
+
+@enduml

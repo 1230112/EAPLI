@@ -1,0 +1,101 @@
+@startuml US1006_CD
+
+class DisplayInfoCandidateUI {
+
+}
+
+class DisplayInfoCandidateController {
+- authorizationService
+- candidateService
++ DisplayInfoCandidateController(authorizationService, candidateRepository)
++getCandidate(email)
+}
+
+
+
+class Candidate {
+ - email
+ -firstName
+    - lastName
+   - requirementsFile
+   - phoneNumber
+   - appStatus
+   - createdAt
+  + toDto()
+}
+
+class CandidateDTO {
+  - email
+    -firstName
+    - lastName
+  - requirementsFile
+  - phoneNumber
+  - createdAt
+}
+
+
+
+
+
+class CandidateService {
+- enrolmentRepository
++ findByEmail()
+}
+
+
+
+
+class RepositoryFactory {
+  + RepositoryFactory()
+}
+
+
+class PersistenceContext {
+  - repositories()
+}
+
+
+interface CandidateRepository {
++ findByEmail(email)
+}
+
+class InMemoryCandidateRepository {
++ findByEmail(email)
+}
+
+class JpaCandidateRepository {
++ findByEmail(email)
+}
+
+class AuthorizationService {
+- LOGGER
+- theSession
++isAuthenticatedUserAuthorizedTo()
+}
+DisplayInfoCandidateController --> AuthorizationService
+
+PersistenceContext --> RepositoryFactory
+
+RepositoryFactory --> CandidateRepository
+
+
+
+CandidateRepository <|.. InMemoryCandidateRepository
+CandidateRepository <|.. JpaCandidateRepository
+
+
+
+DisplayInfoCandidateController --> CandidateService
+
+DisplayInfoCandidateController --> Candidate
+DisplayInfoCandidateController --> CandidateDTO
+
+DisplayInfoCandidateUI --> PersistenceContext
+DisplayInfoCandidateUI --> DisplayInfoCandidateController
+
+CandidateService --> CandidateRepository
+
+
+
+
+@enduml

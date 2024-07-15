@@ -1,0 +1,32 @@
+@startuml US1014_SSD
+
+autonumber
+
+actor CM as " CustomerManager"
+
+activate CM
+
+CM -> ":System" : asks the system to set time and date of an interview for an aplication
+activate ":System"
+":System" --> ":System" : find list of JobOpenings
+":System" --> "CM": shows the list of JobOpenings and request to type the number of one of them
+
+"CM" -> ":System" : type number
+
+":System" --> ":System" : find list of Applications in this JobOpening
+":System" --> CM : shows the list of Applications of the JobOpening
+":System" --> CM : request enter number of the application
+"CM" -> ":System" : type number
+":System" --> CM : request enter date of the interview
+"CM" -> ":System" : type date
+":System" --> CM : request enter time of the interview
+"CM" -> ":System" : type time
+":System" --> ":System" : save data
+":System" --> CM : informs operation success/unsuccess
+deactivate ":System"
+
+
+
+deactivate CM
+
+@enduml

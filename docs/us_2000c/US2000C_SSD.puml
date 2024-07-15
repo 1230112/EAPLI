@@ -1,0 +1,25 @@
+@startuml US2000C_SSD
+
+autonumber
+
+actor Operator as "Operator"
+
+activate Operator
+
+Operator -> ":System" : asks the system to list all Candidates
+activate ":System"
+
+activate ":System"
+":System" --> ":System"
+alt !ERROR
+":System" --> Operator : shows EmailAddress and Name of the Candidate
+
+else ERROR
+":System" --> Operator : informs operation unsuccess and why
+deactivate ":System"
+end alt
+
+
+deactivate Operator
+
+@enduml

@@ -1,0 +1,26 @@
+@startuml
+title US 1002 Domain Model
+skinparam linetype polyline
+
+package JobOpening <<aggregate>> as agrJO {
+    class JobOpening <<root>><<entity>> #back:firebrick
+    class JobReference <<VO>> <<identity>> #back:lightgreen
+    class ContractType <<VO>>
+    class Mode <<VO>>
+    class JobDescription <<VO>>
+    class NumberOfVacancies <<VO>>
+    class Address <<VO>>
+    class Title <<VO>>
+    class Company <<VO>>
+
+    JobOpening -> JobReference
+    JobOpening -up-> ContractType
+    JobOpening -up-> NumberOfVacancies
+    JobOpening -up-> Mode
+    JobOpening -up-> Company
+    JobOpening -up-> Address
+    JobOpening -up-> Title
+    JobOpening -up-> JobDescription
+}
+
+@enduml

@@ -1,0 +1,31 @@
+@startuml
+title US 2002 Domain Model
+skinparam linetype polyline
+
+package JobApplication <<aggregate>> as ja{
+    class JobApplicationID <<VO>> <<identity>> #back:lightgreen
+    class JobApplication <<root>> <<entity>> #back:firebrick
+    class CvFile <<VO>>
+    class ScreeningResult <<VO>>
+    class ScreeningJustification <<VO>>
+    class FinalResult <<VO>>
+
+    JobApplication "1"-> "1"JobApplicationID
+    JobApplication "1"---> "1"CvFile
+    JobApplication "1"---> "0..1"ScreeningResult
+    JobApplication "1"---> "0..1"ScreeningJustification
+    JobApplication "1"---> "0..1"FinalResult
+}
+
+package JobOpening <<aggregate>> as jo {
+    class JobOpening <<root>><<entity>> #back:firebrick
+}
+
+package Candidate <<aggregate>> as ca {
+    class Candidate <<root>> <<entity>> #back:firebrick
+}
+
+JobApplication "*" ---> "1" JobOpening : refers to
+Candidate"1" <-- "*" JobApplication: is submitted by
+
+@enduml
